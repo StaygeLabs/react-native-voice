@@ -302,6 +302,8 @@
  // Configure request so that results are returned before audio
  // recording is finished
  self.recognitionRequest.shouldReportPartialResults = YES;
+ self.recognitionRequest.requiresOnDeviceRecognition = YES;
+
 
  if (self.recognitionRequest == nil) {
    [self sendResult:@{@"code" : @"recognition_init"}:nil:nil:nil];
@@ -357,6 +359,17 @@
                       }
 
                       BOOL isFinal = result.isFinal;
+
+                      if (@available(iOS 18.0, *)) {
+                         if (!isFinal) {
+                           if (result.speechRecognitionMetadata != nil) {
+                             isFinal = result.speechRecognitionMetadata.speechDuration > 0;
+                           } else {
+                             isFinal = NO;
+                           }
+                         }
+                      }
+
 
                       NSMutableArray *transcriptionDics = [NSMutableArray new];
                       for (SFTranscription *transcription in result
